@@ -1,3 +1,5 @@
+# Original template, decided to break up into smaller chunks for readability
+
 ---
 - name: k8s fresh setup
   hosts: k8s_vms
