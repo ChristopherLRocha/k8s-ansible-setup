@@ -1,0 +1,42 @@
+---
+- name: k8s fresh setup
+  hosts: k8s_vms
+  become: yes
+
+  tasks:
+    - name: Get local IPs
+      command: hostname -I
+      register: host_ips
+
+    - name: Determine correct hostname from IP map
+      set_fact:
+        desired_hostname: "{{ item.name }}"
+      loop: "{{ k8s_hosts }}"
+      when: item.ip in host_ips.stdout
+
+    - name: Set the system hostname
+      hostname:
+        name: "{{ desired_hostname }}"
+      when: desired_hostname is defined
+
+    - name: Reboot if hostname changed
+      reboot:
+      when: desired_hostname is defined and ansible_hostname != desired_hostname
+
+    - name: Ensure all /etc/hosts entries exist
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item.ip }}    {{ item.name }}"
+        state: present
+      loop: "{{ k8s_hosts }}"
+
+    - name: Disable swap
+      ansible.builtin.command: swapoff -a
+      when: ansible_swaptotal_mb > 0
+
+    - name: Comment out swap entries in /etc/fstab
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#].*\s+swap\s+.*)$'
+        replace: '# \1'
+      when: ansible_swaptotal_mb > 0
