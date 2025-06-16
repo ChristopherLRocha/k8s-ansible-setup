@@ -1,0 +1,25 @@
+# roles/system_config/tasks/hostname.yml
+
+- name: Get local IPs
+  command: hostname -I
+  register: host_ips
+  changed_when: false
+
+- name: Determine correct hostname from IP map
+  set_fact:
+    desired_hostname: "{{ item.name }}"
+  loop: "{{ k8s_hosts }}"
+  when: item.ip in host_ips.stdout
+
+- name: Set the system hostname
+  ansible.builtin.hostname:
+    name: "{{ desired_hostname }}"
+  when: desired_hostname is defined
+
+- name: Reboot if hostname changed
+  ansible.builtin.reboot:
+  when: desired_hostname is defined and ansible_hostname != desired_hostname
+
+- name: Re-gather facts
+  ansible.builtin.setup:
+  when: desired_hostname is defined and ansible_hostname != desired_hostname

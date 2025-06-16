@@ -1,0 +1,8 @@
+# roles/system_config/tasks/hostsfile.yml
+
+- name: Ensure all /etc/hosts entries exist
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "{{ item.ip }}    {{ item.name }}"
+    state: present
+  loop: "{{ k8s_hosts }}"

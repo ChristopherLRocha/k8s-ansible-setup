@@ -1,0 +1,10 @@
+# roles/system_config/tasks/main.yml
+
+- name: Set hostname
+  import_tasks: hostname.yml
+
+- name: Update /etc/hosts
+  import_tasks: hostsfile.yml
+
+- name: Disable swap
+  import_tasks: disable_swap.yml
