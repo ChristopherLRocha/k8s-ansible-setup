@@ -8,3 +8,10 @@
 
 - name: Disable swap
   import_tasks: disable_swap.yml
+
+- name: Load kernel modules for Kubernetes
+  import_tasks: kernel_modules.yml
+
+- name: Set sysctl values for Kubernetes networking
+  import_tasks: sysctl.yml
+  

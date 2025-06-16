@@ -1,0 +1,21 @@
+# roles/system_config/tasks/kernel_modules.yml
+
+- name: Load required kernel module overlay
+  ansible.builtin.modprobe:
+    name: overlay
+    state: present
+
+- name: Load required kernel module br_netfilter
+  ansible.builtin.modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Persist required kernel modules
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k8s.conf
+    content: |
+      overlay
+      br_netfilter
+    owner: root
+    group: root
+    mode: '0644'
